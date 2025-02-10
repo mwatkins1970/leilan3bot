@@ -1,26 +1,26 @@
-# Start from Hugging Face's Text Generation Inference base image
+# Use the Hugging Face TGI (Text Generation Inference) image
 FROM ghcr.io/huggingface/text-generation-inference:latest
 
-# Set working directory inside the container
-WORKDIR /app
+# Install missing text-generation-server
+RUN apt-get update && apt-get install -y make && \
+    pip install --no-cache-dir text-generation==0.8.1 && \
+    make install-server
 
-# Copy requirements first to leverage Docker's caching
+# Install additional Python dependencies
 COPY requirements.txt .
-
-# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the entire project into the container
-COPY . . 
+# Copy the full application code
+COPY chapter2/ chapter2/
+COPY ems/ ems/
 
-# Set environment variables
-ENV PYTHONPATH="/app"
+# Set necessary environment variables
 ENV HUGGINGFACE_HUB_CACHE=/data
 ENV TRANSFORMERS_CACHE=/data
-ENV HANDLER_PATH=/app/chapter2/handler.py
+ENV HANDLER_PATH=/app/handler.py
 
-# Expose port (if needed)
+# Expose the correct port
 EXPOSE 80
 
-# Command to run the bot
-CMD ["python", "chapter2/main.py", "Leilan"]
+# Command to start the text generation server
+CMD ["text-generation-launcher"]
