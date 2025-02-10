@@ -1,13 +1,8 @@
 # Use the Hugging Face TGI (Text Generation Inference) image
 FROM ghcr.io/huggingface/text-generation-inference:latest
 
-# Install dependencies with proper error checking
-RUN apt-get update && \
-    apt-get install -y make wget python3 python3-pip && \
-    pip install --no-cache-dir text-generation==0.7.0 && \
-    make install-server && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+# Install only what's absolutely necessary
+RUN pip install --no-cache-dir text-generation==0.7.0
 
 # Install additional Python dependencies
 COPY requirements.txt /tmp/requirements.txt
