@@ -22,6 +22,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Add back disk space cleanup, but more targeted
+      - name: Free Disk Space (Ubuntu)
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /opt/hostedtoolcache
+          sudo apt-get clean
+          sudo docker image prune -af
+          df -h
+
       - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
