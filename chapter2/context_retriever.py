@@ -1,11 +1,12 @@
 import numpy as np
 import json
 from pathlib import Path
+import requests
+import logging
 from sentence_transformers import SentenceTransformer
 from datetime import datetime
 from collections import defaultdict
 from typing import Dict, List, Tuple, Optional, Any, Union
-import logging
 from username_normalizer import UsernameNormalizer
 
 # Configuration
@@ -17,6 +18,30 @@ RESULTS_PER_CATEGORY = {
 }
 SIMILARITY_METHOD = "max"  # or "mean"
 DEFAULT_TEMPLATE = "rag_template.txt"
+
+# HuggingFace Dataset Configuration
+HF_DATASET_URL = "https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve/main"
+REQUIRED_FILES = [
+    # Main directory files
+    "dialogue_embeddings_mpnet.npy",
+    "essay_embeddings_mpnet.npy",
+    "interview_embeddings_mpnet.npy",
+    "dialogue_chunks_mpnet.json",
+    "dialogue_metadata_mpnet.json",
+    "essay_chunks_mpnet.json",
+    "essay_metadata_mpnet.json",
+    "interview_chunks_mpnet.json",
+    "interview_metadata_mpnet.json",
+    # Subchunked directory files
+    "subchunked/dialogue_metadata_subchunked.json",
+    "subchunked/dialogue_texts_subchunked.json",
+    "subchunked/essay_chunks_mpnet.json",
+    "subchunked/essay_metadata_mpnet.json",
+    "subchunked/essay_stats_mpnet.json",
+    "subchunked/interview_chunks_mpnet.json",
+    "subchunked/interview_metadata_mpnet.json",
+    "subchunked/interview_stats_mpnet.json"
+]
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -41,39 +66,60 @@ class SubchunkData:
     def __init__(self, subchunks: List[str], embeddings: np.ndarray, parent_indices: List[int]):
         self.subchunks = subchunks
         self.embeddings = embeddings
-        self.parent_indices = parent_indices  # Maps each subchunk to its parent chunk index
+        self.parent_indices = parent_indices
 
 class ContextRetriever:
     def __init__(self, embeddings_dir="/embeddings"):
         self.embeddings_dir = Path(embeddings_dir)
         self.subchunks_dir = self.embeddings_dir / "subchunked"
+        self.ensure_embeddings_exist()
         self.model = SentenceTransformer('sentence-transformers/all-mpnet-base-v2')
         self.load_data()
 
+    def ensure_embeddings_exist(self):
+        """Download embeddings from HuggingFace if they don't exist locally"""
+        logger.info("Checking embeddings files...")
+        
+        # Create directories if they don't exist
+        self.embeddings_dir.mkdir(parents=True, exist_ok=True)
+        self.subchunks_dir.mkdir(parents=True, exist_ok=True)
+
+        for file_path in REQUIRED_FILES:
+            local_path = self.embeddings_dir / file_path
+            if not local_path.exists():
+                logger.info(f"Downloading {file_path}...")
+                url = f"{HF_DATASET_URL}/{file_path}"
+                
+                # Create parent directories if needed
+                local_path.parent.mkdir(parents=True, exist_ok=True)
+                
+                # Download file
+                response = requests.get(url, stream=True)
+                response.raise_for_status()
+                
+                with open(local_path, 'wb') as f:
+                    for chunk in response.iter_content(chunk_size=8192):
+                        f.write(chunk)
+                logger.info(f"Downloaded {file_path}")
+            else:
+                logger.info(f"File {file_path} already exists")
+
+    async def create(cls, embeddings_dir="/embeddings"):
+        """Async factory method to create and initialize a ContextRetriever instance."""
+        retriever = cls(embeddings_dir)
+        return retriever
+
     async def retrieve_context_for_message(self, message_text: str) -> str:
-        """
-        Async method to retrieve context for a given message.
-        Returns the formatted context string directly instead of writing to file.
-        """
-        # This method just calls the synchronous retrieve_contexts without await
+        """Async method to retrieve context for a given message."""
         template = self.retrieve_contexts(message_text)
         return template
 
-    @classmethod
-    async def create(cls, embeddings_dir="/embeddings"):
-        """
-        Async factory method to create and initialize a ContextRetriever instance.
-        """
-        retriever = cls(embeddings_dir)
-        # Do any async initialization here if needed
-        return retriever
-    
     def load_data(self):
         """Load all necessary data files including subchunks."""
         try:
             logger.info("Loading data...")
             
-            # Load dialogue data (used for both gpt and opus)
+            # Load dialogue data
             self.dialogue_chunks = self.load_json(self.embeddings_dir / "dialogue_chunks_mpnet.json")
             dialogue_metadata_raw = self.load_json(self.embeddings_dir / "dialogue_metadata_mpnet.json")
             self.dialogue_metadata = [ChunkMetadata(label) for label in dialogue_metadata_raw]
@@ -108,12 +154,6 @@ class ContextRetriever:
             )
 
             logger.info("Data loading complete")
-            logger.info(f"Dialogue chunks: {len(self.dialogue_chunks)}")
-            logger.info(f"Dialogue subchunks: {len(self.dialogue_subchunks.subchunks)}")
-            logger.info(f"Essay chunks: {len(self.essay_chunks)}")
-            logger.info(f"Essay subchunks: {len(self.essay_subchunks.subchunks)}")
-            logger.info(f"Interview chunks: {len(self.interview_chunks)}")
-            logger.info(f"Interview subchunks: {len(self.interview_subchunks.subchunks)}")
 
         except Exception as e:
             logger.error(f"Error loading data: {str(e)}")
