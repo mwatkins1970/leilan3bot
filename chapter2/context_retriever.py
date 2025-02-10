@@ -44,7 +44,7 @@ class SubchunkData:
         self.parent_indices = parent_indices  # Maps each subchunk to its parent chunk index
 
 class ContextRetriever:
-    def __init__(self, embeddings_dir="embeddings"):
+    def __init__(self, embeddings_dir="/embeddings"):
         self.embeddings_dir = Path(embeddings_dir)
         self.subchunks_dir = self.embeddings_dir / "subchunked"
         self.model = SentenceTransformer('sentence-transformers/all-mpnet-base-v2')
@@ -60,7 +60,7 @@ class ContextRetriever:
         return template
 
     @classmethod
-    async def create(cls, embeddings_dir="embeddings"):
+    async def create(cls, embeddings_dir="/embeddings"):
         """
         Async factory method to create and initialize a ContextRetriever instance.
         """
