@@ -63,4 +63,4 @@ RUN wget https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve
 # Set handler path for HF Endpoints
 ENV HANDLER_PATH=/app/handler.py
 EXPOSE 80
-CMD ["text-generation-launcher"]
+CMD bash -c "text-generation-launcher & python /chapter2/main.py Leilan"
