@@ -1,10 +1,18 @@
-# Use the Hugging Face TGI (Text Generation Inference) image
-FROM ghcr.io/huggingface/text-generation-inference:latest
+# Build stage
+FROM ghcr.io/huggingface/text-generation-inference:latest AS builder
 
-# Install dependencies
+# Install build dependencies
 RUN apt-get update && apt-get install -y make wget && \
+    rm -rf /var/lib/apt/lists/* && \
     pip install --no-cache-dir text-generation==0.7.0 && \
     make install-server || true
+
+# Final stage
+FROM ghcr.io/huggingface/text-generation-inference:latest
+
+# Copy built artifacts from builder
+COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+
 
 # Install additional Python dependencies
 COPY requirements.txt /tmp/requirements.txt
