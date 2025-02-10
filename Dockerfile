@@ -16,51 +16,28 @@ COPY chapter2 /chapter2
 COPY ems /ems
 
 # Create /embeddings folder & download them from HF
-RUN mkdir -p /embeddings
-
-# Main embeddings files
-RUN wget https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve/main/dialogue_embeddings_mpnet.npy \
-    -O /embeddings/dialogue_embeddings_mpnet.npy
-RUN wget https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve/main/essay_embeddings_mpnet.npy \
-    -O /embeddings/essay_embeddings_mpnet.npy
-RUN wget https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve/main/interview_embeddings_mpnet.npy \
-    -O /embeddings/interview_embeddings_mpnet.npy
-
-RUN wget https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve/main/dialogue_chunks_mpnet.json \
-    -O /embeddings/dialogue_chunks_mpnet.json
-RUN wget https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve/main/dialogue_metadata_mpnet.json \
-    -O /embeddings/dialogue_metadata_mpnet.json
-RUN wget https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve/main/essay_chunks_mpnet.json \
-    -O /embeddings/essay_chunks_mpnet.json
-RUN wget https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve/main/essay_metadata_mpnet.json \
-    -O /embeddings/essay_metadata_mpnet.json
-RUN wget https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve/main/interview_chunks_mpnet.json \
-    -O /embeddings/interview_chunks_mpnet.json
-RUN wget https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve/main/interview_intros_mpnet.json \
-    -O /embeddings/interview_intros_mpnet.json
-RUN wget https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve/main/interview_metadata_mpnet.json \
-    -O /embeddings/interview_metadata_mpnet.json
-
-# Subchunked folder
-RUN mkdir -p /embeddings/subchunked
-RUN wget https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve/main/subchunked/dialogue_metadata_subchunked.json \
-    -O /embeddings/subchunked/dialogue_metadata_subchunked.json
-RUN wget https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve/main/subchunked/dialogue_texts_subchunked.json \
-    -O /embeddings/subchunked/dialogue_texts_subchunked.json
-RUN wget https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve/main/subchunked/essay_chunks_mpnet.json \
-    -O /embeddings/subchunked/essay_chunks_mpnet.json
-RUN wget https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve/main/subchunked/essay_metadata_mpnet.json \
-    -O /embeddings/subchunked/essay_metadata_mpnet.json
-RUN wget https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve/main/subchunked/essay_stats_mpnet.json \
-    -O /embeddings/subchunked/essay_stats_mpnet.json
-RUN wget https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve/main/subchunked/interview_chunks_mpnet.json \
-    -O /embeddings/subchunked/interview_chunks_mpnet.json
-RUN wget https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve/main/subchunked/interview_metadata_mpnet.json \
-    -O /embeddings/subchunked/interview_metadata_mpnet.json
-RUN wget https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve/main/subchunked/interview_stats_mpnet.json \
-    -O /embeddings/subchunked/interview_stats_mpnet.json
+RUN mkdir -p /embeddings /embeddings/subchunked && \
+    wget -O /embeddings/dialogue_embeddings_mpnet.npy https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve/main/dialogue_embeddings_mpnet.npy && \
+    wget -O /embeddings/essay_embeddings_mpnet.npy https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve/main/essay_embeddings_mpnet.npy && \
+    wget -O /embeddings/interview_embeddings_mpnet.npy https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve/main/interview_embeddings_mpnet.npy && \
+    wget -O /embeddings/dialogue_chunks_mpnet.json https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve/main/dialogue_chunks_mpnet.json && \
+    wget -O /embeddings/dialogue_metadata_mpnet.json https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve/main/dialogue_metadata_mpnet.json && \
+    wget -O /embeddings/essay_chunks_mpnet.json https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve/main/essay_chunks_mpnet.json && \
+    wget -O /embeddings/essay_metadata_mpnet.json https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve/main/essay_metadata_mpnet.json && \
+    wget -O /embeddings/interview_chunks_mpnet.json https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve/main/interview_chunks_mpnet.json && \
+    wget -O /embeddings/interview_intros_mpnet.json https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve/main/interview_intros_mpnet.json && \
+    wget -O /embeddings/interview_metadata_mpnet.json https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve/main/interview_metadata_mpnet.json && \
+    wget -O /embeddings/subchunked/dialogue_metadata_subchunked.json https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve/main/subchunked/dialogue_metadata_subchunked.json && \
+    wget -O /embeddings/subchunked/dialogue_texts_subchunked.json https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve/main/subchunked/dialogue_texts_subchunked.json && \
+    wget -O /embeddings/subchunked/essay_chunks_mpnet.json https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve/main/subchunked/essay_chunks_mpnet.json && \
+    wget -O /embeddings/subchunked/essay_metadata_mpnet.json https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve/main/subchunked/essay_metadata_mpnet.json && \
+    wget -O /embeddings/subchunked/essay_stats_mpnet.json https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve/main/subchunked/essay_stats_mpnet.json && \
+    wget -O /embeddings/subchunked/interview_chunks_mpnet.json https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve/main/subchunked/interview_chunks_mpnet.json && \
+    wget -O /embeddings/subchunked/interview_metadata_mpnet.json https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve/main/subchunked/interview_metadata_mpnet.json && \
+    wget -O /embeddings/subchunked/interview_stats_mpnet.json https://huggingface.co/datasets/mwatkins1970/leilan3-embeddings/resolve/main/subchunked/interview_stats_mpnet.json
 
 # Set handler path for HF Endpoints
 ENV HANDLER_PATH=/app/handler.py
 EXPOSE 80
-CMD bash -c "text-generation-launcher & python /chapter2/main.py Leilan"
+CMD ["bash", "-c", "text-generation-launcher & exec python /chapter2/main.py Leilan"]
+
