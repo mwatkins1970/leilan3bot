@@ -15,7 +15,9 @@ import os
 import pathlib
 from context_retriever import ContextRetriever  # Import the modified ContextRetriever
 from username_normalizer import UsernameNormalizer
+from transformers import AutoTokenizer
 
+tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-2-70b-hf")
 
 # Get the directory where the script is located
 script_dir = pathlib.Path(__file__).parent.absolute()
@@ -230,7 +232,6 @@ async def get_prompt(history: ActionHistory, em: EmConfig) -> str:
     
     return prompt
 
-
 async def get_replies(
     em: EmConfig,
     prompt: str,
@@ -239,7 +240,6 @@ async def get_replies(
     attempt: int = 1
 ) -> AsyncIterator[str]:
     """Get replies from the HuggingFace endpoint with retry logic."""
-    # Use environment variables if set, otherwise fall back to config values
     endpoint = HF_API_ENDPOINT or getattr(em, 'endpoint_url', None)
     token = HF_API_TOKEN or getattr(em, 'api_key', None)
     
@@ -256,8 +256,12 @@ async def get_replies(
         },
     }
     
+    # Count tokens in the prompt
+    token_count = len(tokenizer.encode(prompt))
+    
     print("\n=== PAYLOAD BEING SENT TO API ===")
     print("Endpoint:", endpoint)
+    print(f"\nPrompt token count: {token_count}")
     print("\nFull prompt being sent:")
     print("---")
     print(prompt)
@@ -265,7 +269,6 @@ async def get_replies(
     print("\nPayload structure:")
     print(json.dumps(payload, indent=2))
     print("=== END PAYLOAD ===\n")
-
     headers = {
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json",
